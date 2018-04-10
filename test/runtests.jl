@@ -1,5 +1,17 @@
+using Revise
 using RemoteGtkIDE
 using Base.Test
 
-# write your own tests here
-@test 1 == 2
+#value  = String(read(`julia repl.jl`))
+
+port, server = RemoteGtkIDE.start_server()
+
+client = connect(port)
+serialize(client,("test",))
+deserialize(client)
+
+@test length( RemoteGtkIDE.remote_eval(client, Main, :(x=rand(3))) ) == 3
+
+@test RemoteGtkIDE.remotecall_fetch(sin, client, 0) ≈ 0.0
+
+@test_throws MethodError throw(RemoteGtkIDE.remotecall_fetch(sin, client, "pi"))

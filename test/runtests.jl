@@ -10,6 +10,11 @@ client = connect(port)
 serialize(client,("test",))
 deserialize(client)
 
+# @async while true
+#     response = deserialize(client)
+#     println(response)
+# end
+
 @test length( RemoteGtkIDE.remote_eval(client, Main, :(x=rand(3))) ) == 3
 
 @test RemoteGtkIDE.remotecall_fetch(sin, client, 0) ≈ 0.0

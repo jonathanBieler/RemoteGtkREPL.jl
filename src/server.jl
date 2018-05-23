@@ -1,5 +1,15 @@
 @enum Messages DONE=1
 
+macro safe(ex)
+    esc(quote
+        try 
+            $ex
+        catch err
+            err
+        end
+    end)
+end
+
 function start_server()
     port, server = listenany(8000)
 
@@ -13,21 +23,17 @@ function start_server()
 end
 
 function process_client(sock)
+
     while isopen(sock)
-        data = deserialize(sock)
+        data = try
+            deserialize(sock)
+        catch err
+            warn("Fail to process client: $err")
+            return
+        end
         response = process_message(data...)
         serialize(sock, response)
     end
-end
-
-macro safe(ex)
-    esc(quote
-        try 
-            $ex
-        catch err
-            err
-        end
-    end)
 end
 
 function process_message(data)

@@ -1,5 +1,5 @@
 __precompile__()
-module RemoteGtkIDE
+module RemoteGtkREPL
 
     function gadfly()
         @eval begin
@@ -10,16 +10,15 @@ module RemoteGtkIDE
 
     import Base.remotecall_fetch #doesn't need to be exported, it gets propagated in parent module automatically
 
-    export eval_command_remotely, isdone, interrupt_task, run_task, eval_symbol, gadfly
+    export eval_command_remotely, isdone, interrupt_task, run_task, eval_symbol
 
     function __init__()
         global _run_task = @schedule begin end
     end
 
     include("eval.jl")
-    include("server.jl")    
+    include("server.jl")
     include("doc.jl")
     include("stdio.jl")
 
 end # module
-

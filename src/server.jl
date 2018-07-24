@@ -1,3 +1,5 @@
+@enum Messages DONE=1
+
 macro safe(ex)
     esc(quote
         try

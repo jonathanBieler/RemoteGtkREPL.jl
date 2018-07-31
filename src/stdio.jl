@@ -1,4 +1,4 @@
-function send_stream(rd::IO, sock::TCPSocket, id::Int)
+function send_stream(rd::IO, sock::TCPSocket, id::Int, mod)
     nb = nb_available(rd)
     if nb > 0
         d = read(rd, nb)
@@ -10,7 +10,7 @@ function send_stream(rd::IO, sock::TCPSocket, id::Int)
             info("sending $s to $(string(sock)) with id: $id")
 
             remotecall_fetch(include_string, sock,"
-                eval(GtkREPL,:(
+                eval($mod,:(
                     print_to_console_remote(\"$(s)\", $(id))
                 ))
             ")
@@ -19,9 +19,9 @@ function send_stream(rd::IO, sock::TCPSocket, id::Int)
     end
 end
 
-function watch_stream(rd::IO, sock::TCPSocket, id::Int)
+function watch_stream(rd::IO, sock::TCPSocket, id::Int, mod)
     while !eof(rd) # blocks until something is available
-        send_stream(rd,sock,id)
+        send_stream(rd,sock,id,mod)
         sleep(0.01) # a little delay to accumulate output
     end
 end

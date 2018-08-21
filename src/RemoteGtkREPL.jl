@@ -1,4 +1,3 @@
-__precompile__()
 module RemoteGtkREPL
 
     using Base64, Sockets, Serialization, Distributed

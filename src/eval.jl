@@ -5,16 +5,9 @@ interrupt_task() = @async Base.throwto(_run_task, InterruptException())
 #FIXME dirty hack
 function clean_error_msg(s::String)
 
-    if VERSION < v"0.6.0"
-
-        r  = Regex("(.*)in eval_command_remotely.*","s")
-        m = match(r,s)
-        m != nothing && return m.captures[1]
-    else
-        r  = Regex("""(.*)\\[\\d\\] eval_command_remotely.*""","s")
-        m = match(r,s)
-        m != nothing && return m.captures[1]
-    end
+    r  = Regex("""(.*)\\[\\d\\] eval_command_remotely.*""","s")
+    m = match(r,s)
+    m != nothing && return m.captures[1]
     s
 end
 

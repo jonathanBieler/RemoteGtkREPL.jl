@@ -10,7 +10,7 @@ function send_stream(rd::IO, sock::TCPSocket, id::Int, mod)
             info("sending $s to $(string(sock)) with id: $id")
 
             remotecall_fetch(include_string, sock,"
-                eval($mod,:(
+                Core.eval($mod,:(
                     print_to_console_remote(\"$(s)\", $(id))
                 ))
             ")

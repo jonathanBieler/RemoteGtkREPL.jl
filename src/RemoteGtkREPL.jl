@@ -1,6 +1,8 @@
 __precompile__()
 module RemoteGtkREPL
 
+    using Base64, Sockets, Serialization, Distributed
+
     function gadfly()
         @eval begin
             import Gadfly
@@ -13,7 +15,7 @@ module RemoteGtkREPL
     export eval_command_remotely, isdone, interrupt_task, run_task, eval_symbol
 
     function __init__()
-        global _run_task = @schedule begin end
+        global _run_task = @async begin end
     end
 
     include("eval.jl")

@@ -62,5 +62,5 @@ function remote_eval(client, mod::Module, ex::Expr)
     deserialize(client)
 end
 function process_message(mod::Module,ex::Expr)
-    @safe eval(mod,ex)
+    @safe Core.eval(mod,ex)
 end

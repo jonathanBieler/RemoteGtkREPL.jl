@@ -1,6 +1,6 @@
 run_task() = _run_task
 isdone() = _run_task.state == :done
-interrupt_task() = @schedule Base.throwto(_run_task, InterruptException())
+interrupt_task() = @async Base.throwto(_run_task, InterruptException())
 
 #FIXME dirty hack
 function clean_error_msg(s::String)
@@ -11,7 +11,7 @@ function clean_error_msg(s::String)
         m = match(r,s)
         m != nothing && return m.captures[1]
     else
-        r  = Regex("(.*)\\[\\d\\] eval_command_remotely.*""","s")
+        r  = Regex("""(.*)\\[\\d\\] eval_command_remotely.*""","s")
         m = match(r,s)
         m != nothing && return m.captures[1]
     end
@@ -36,24 +36,24 @@ end
 is_plot(v) = typeof(v) <: Gadfly.Plot ? v : nothing
 
 function eval_command_remotely(cmd::String,eval_in::Module)
-    global _run_task = @schedule _eval_command_remotely(cmd,eval_in)
+    global _run_task = @async _eval_command_remotely(cmd,eval_in)
     nothing
 end
 
 function eval_shell_remotely(cmd::String)
-    global _run_task = @schedule _eval_shell_remotely(cmd)
+    global _run_task = @async _eval_shell_remotely(cmd)
     nothing
 end
 
 function _eval_command_remotely(cmd::String,eval_in::Module)
     ex = Base.parse_input_line(cmd)
-    ex = expand(ex)
+    ex = Meta.lower(eval_in,ex)
 
     evalout = ""
     v = :()
     try
-        v = eval(eval_in,ex)
-        eval(eval_in, :(ans = $(Expr(:quote, v))))
+        v = Core.eval(eval_in,ex)
+        Core.eval(eval_in, :(ans = $(Expr(:quote, v))))
 
         evalout = v == nothing ? "" : format_output(v)
 
@@ -95,7 +95,7 @@ function repl_cmd(cmd)
                 end
                 cd(ENV["OLDPWD"])
             else
-                cd(@static is_windows() ? dir : readchomp(`$shell -c "echo $(shell_escape(dir))"`))
+                cd(@static Sys.iswindows() ? dir : readchomp(`$shell -c "echo $(shell_escape(dir))"`))
             end
         else
             cd()
@@ -103,19 +103,14 @@ function repl_cmd(cmd)
         ENV["OLDPWD"] = new_oldpwd
         return pwd()
     else
-        return readstring(ignorestatus(@static is_windows() ? cmd : (isa(STDIN, Base.TTY) ? `$shell -i -c "$(shell_wrap_true(shell_name, cmd))"` : `$shell -c "$(shell_wrap_true(shell_name, cmd))"`)))
+        return readstring(ignorestatus(@static Sys.iswindows() ? cmd : (isa(STDIN, Base.TTY) ? `$shell -i -c "$(shell_wrap_true(shell_name, cmd))"` : `$shell -c "$(shell_wrap_true(shell_name, cmd))"`)))
     end
     ""
 end
 
-#cmd = "ls *"
-#cmd = eval( :(Base.cmd_gen($(Base.shell_parse(cmd)[1]))) )
-#repl_cmd(cmd)
-
-
 function _eval_shell_remotely(cmd::String)
     evalout = try
-        cmd = eval( :(Base.cmd_gen($(Base.shell_parse(cmd)[1]))) )
+        cmd = Core.eval( :(Base.cmd_gen($(Base.shell_parse(cmd)[1]))) )
         repl_cmd(cmd)
     catch err
         bt = catch_backtrace()

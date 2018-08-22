@@ -10,7 +10,7 @@ module RemoteGtkREPL
         end
     end
 
-    import Base.remotecall_fetch #doesn't need to be exported, it gets propagated in parent module automatically
+    import Distributed.remotecall_fetch #doesn't need to be exported, it gets propagated in parent module automatically
 
     export eval_command_remotely, isdone, interrupt_task, run_task, eval_symbol
 

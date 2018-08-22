@@ -6,14 +6,11 @@ function send_stream(rd::IO, sock::TCPSocket, id::Int, mod)
 
         if !isempty(s)
             # remotecall_fetch(print_to_console_remote,sock,s,id)
+            #info("sending $s to $(string(sock)) with id: $id")
 
-            info("sending $s to $(string(sock)) with id: $id")
-
-            remotecall_fetch(include_string, sock,"
-                Core.eval($mod,:(
-                    print_to_console_remote(\"$(s)\", $(id))
-                ))
-            ")
+            remotecall_fetch(include_string, sock,mod,
+                "print_to_console_remote(\"$(s)\", $(id))"
+            )
 
         end
     end
@@ -27,7 +24,6 @@ function watch_stream(rd::IO, sock::TCPSocket, id::Int, mod)
 end
 
 function print_to_console_remote(s,idx::Integer)
-    info("received print data with index $idx" )
     #print the output to the right console
     for i = 1:length(main_window.console_manager)
         c = get_tab(main_window.console_manager,i)

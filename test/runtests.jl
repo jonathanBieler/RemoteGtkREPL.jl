@@ -1,12 +1,12 @@
 using RemoteGtkREPL
-using Base.Test
-using Serialization, Distributed
+using Test
+using Serialization, Distributed, Sockets
 
 global const c = Condition()
 
 function client_start_cb(port)
 
-    info("getting called $port")
+    @info "getting called $port"
     client = connect(port)
 
     #@test RemoteGtkREPL.remotecall_fetch(sin, client, 0) ≈ 0.0
@@ -17,7 +17,7 @@ function client_start_cb(port)
 
     notify(c)
     RemoteGtkREPL.remotecall_fetch(quit, client) #brutally kill the client
-    info("Done")
+    @info "Done"
 end
 
 @testset "Server and Eval" begin
@@ -43,13 +43,12 @@ end
     @test RemoteGtkREPL.remotecall_fetch(sin, client, 0) ≈ 0.0
     @test_throws MethodError throw(RemoteGtkREPL.remotecall_fetch(sin, client, "pi"))
 
-    p = joinpath(@__DIR__,"test","remote_startup.jl")
+    p = joinpath(@__DIR__,"remote_startup.jl")
 
     #s = "tell application \"Terminal\" to do script \"julia -i \\\"$p\\\" $port 1\""
     #run(`osascript -e $s`)
 
     @async run(`julia $p $port 1`)#this will call back client_start_cb and notify c
     wait(c)
-
 
 end

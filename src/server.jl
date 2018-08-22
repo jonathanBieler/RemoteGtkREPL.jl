@@ -28,7 +28,7 @@ function process_client(sock)
         data = try
             deserialize(sock)
         catch err
-            warn("Fail to deserialize client: $err")
+            @warn "Fail to deserialize client: $err"
             break
         end
 
@@ -37,7 +37,7 @@ function process_client(sock)
         try
             serialize(sock, response)
         catch err
-            warn("Fail to serialize client: $err")
+            @warn "Fail to serialize client: $err"
             break
         end
     end
@@ -50,9 +50,7 @@ end
 
 function remotecall_fetch(f::Function, client::TCPSocket,args...)
     @safe serialize(client, (f, args...) )
-    #info("done serializing")
     x = @safe deserialize(client)
-    #info("done deserializing")
     x
 end
 process_message(f::Function, args...) = @safe f(args...)

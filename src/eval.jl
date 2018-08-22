@@ -65,7 +65,7 @@ function _eval_command_remotely(cmd::String,eval_in::Module)
     evalout = trim(evalout,4000)
     finalOutput = evalout == "" ? "" : "$evalout\n"
 
-    if @eval isdefined(:Gadfly)
+    if @eval @isdefined Gadfly
         v = is_plot(v)
     else
         v = nothing
@@ -75,36 +75,8 @@ function _eval_command_remotely(cmd::String,eval_in::Module)
     return finalOutput, v
 end
 
-import Base: shell_wrap_true, shell_escape
-
 function repl_cmd(cmd)
-    shell = Base.shell_split(get(ENV,"JULIA_SHELL",get(ENV,"SHELL","/bin/sh")))
-    shell_name = Base.basename(shell[1])
-
-    if isempty(cmd.exec)
-        throw(ArgumentError("no cmd to execute"))
-    elseif cmd.exec[1] == "cd"
-        new_oldpwd = pwd()
-        if length(cmd.exec) > 2
-            throw(ArgumentError("cd method only takes one argument"))
-        elseif length(cmd.exec) == 2
-            dir = cmd.exec[2]
-            if dir == "-"
-                if !haskey(ENV, "OLDPWD")
-                    error("cd: OLDPWD not set")
-                end
-                cd(ENV["OLDPWD"])
-            else
-                cd(@static Sys.iswindows() ? dir : readchomp(`$shell -c "echo $(shell_escape(dir))"`))
-            end
-        else
-            cd()
-        end
-        ENV["OLDPWD"] = new_oldpwd
-        return pwd()
-    else
-        return readstring(ignorestatus(@static Sys.iswindows() ? cmd : (isa(STDIN, Base.TTY) ? `$shell -i -c "$(shell_wrap_true(shell_name, cmd))"` : `$shell -c "$(shell_wrap_true(shell_name, cmd))"`)))
-    end
+    @warn "repl_cmd not implemented"
     ""
 end
 

@@ -34,7 +34,7 @@
       #this prepends eval_in so we can evaluate in Main directly :(eval_in.ex)
       ex = qn(eval_in, qs(ex)...)
 
-      evalout = try eval(Main,ex) catch err "" end
+      evalout = try Core.eval(Main,ex) catch err; "" end
   end
 
   function get_doc(s::Symbol,eval_in::Module)
@@ -43,8 +43,8 @@
       )
   end
   function get_doc(ex::Expr,eval_in::Module)
-      try eval(eval_in,:( @doc $ex )) catch "" end
+      try Core.eval(eval_in,:( @doc $ex )) catch; "" end
   end
   function get_doc(ex::String,eval_in::Module)
-      try get_doc(parse(ex),eval_in::Module) catch err return err end
+      try get_doc(parse(ex),eval_in::Module) catch err; return err end
   end

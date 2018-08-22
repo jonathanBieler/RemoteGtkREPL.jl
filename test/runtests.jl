@@ -1,11 +1,12 @@
 using RemoteGtkREPL
-using Base.Test
+using Test
+using Serialization, Distributed, Sockets
 
 global const c = Condition()
 
 function client_start_cb(port)
 
-    info("getting called $port")
+    @info "getting called $port"
     client = connect(port)
 
     #@test RemoteGtkREPL.remotecall_fetch(sin, client, 0) ≈ 0.0
@@ -16,7 +17,7 @@ function client_start_cb(port)
 
     notify(c)
     RemoteGtkREPL.remotecall_fetch(quit, client) #brutally kill the client
-    info("Done")
+    @info "Done"
 end
 
 @testset "Server and Eval" begin
@@ -28,11 +29,11 @@ end
     deserialize(client)
 
     #
-    @test RemoteGtkREPL._eval_command_remotely("x=2",current_module()) == ("2\n",nothing)
+    @test RemoteGtkREPL._eval_command_remotely("x=2",@__MODULE__) == ("2\n",nothing)
     @test x == 2
 
     #
-    RemoteGtkREPL.eval_command_remotely("x=3",current_module())
+    RemoteGtkREPL.eval_command_remotely("x=3",@__MODULE__)
     while !RemoteGtkREPL.isdone() sleep(0.01) end
     @test RemoteGtkREPL.run_task().result == ("3\n",nothing)
     @test x == 3
@@ -42,13 +43,12 @@ end
     @test RemoteGtkREPL.remotecall_fetch(sin, client, 0) ≈ 0.0
     @test_throws MethodError throw(RemoteGtkREPL.remotecall_fetch(sin, client, "pi"))
 
-    p = joinpath(Pkg.dir(),"RemoteGtkREPL","test","remote_startup.jl")
+    p = joinpath(@__DIR__,"remote_startup.jl")
 
     #s = "tell application \"Terminal\" to do script \"julia -i \\\"$p\\\" $port 1\""
     #run(`osascript -e $s`)
 
-    @schedule run(`julia $p $port 1`)#this will call back client_start_cb and notify c
+    @async run(`julia $p $port 1`)#this will call back client_start_cb and notify c
     wait(c)
-
 
 end

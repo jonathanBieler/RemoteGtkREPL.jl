@@ -46,5 +46,5 @@
       try Core.eval(eval_in,:( @doc $ex )) catch; "" end
   end
   function get_doc(ex::String,eval_in::Module)
-      try get_doc(parse(ex),eval_in::Module) catch err; return err end
+      try get_doc(Meta.parse(ex),eval_in::Module) catch err; return err end
   end

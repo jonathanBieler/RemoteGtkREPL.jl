@@ -47,9 +47,7 @@ function _eval_command_remotely(cmd::String,eval_in::Module)
     try
         v = Core.eval(eval_in,ex)
         Core.eval(eval_in, :(ans = $(Expr(:quote, v))))
-
         evalout = v == nothing ? "" : format_output(v)
-
     catch err
         bt = catch_backtrace()
         evalout = clean_error_msg( sprint(showerror,err,bt) )

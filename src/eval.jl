@@ -35,8 +35,9 @@ end
 
 is_plot(v) = typeof(v) <: Gadfly.Plot ? v : nothing
 
-function eval_command_remotely(cmd::String,eval_in::Module)
-    global _run_task = @async _eval_command_remotely(cmd,eval_in)
+function eval_command_remotely(cmd::String,eval_in::String)
+    mod =  @eval $(Meta.parse(eval_in))
+    global _run_task = @async _eval_command_remotely(cmd,mod)
     nothing
 end
 

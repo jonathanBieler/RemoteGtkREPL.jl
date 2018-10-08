@@ -1,4 +1,4 @@
-@enum Messages DONE=1
+@enum Messages DONE=1 FAILURE=2
 
 macro safe(ex)
     esc(quote
@@ -29,7 +29,8 @@ function process_client(sock)
             deserialize(sock)
         catch err
             @warn "Fail to deserialize client: $err"
-            break
+            serialize(sock, FAILURE)
+            continue
         end
 
         response = process_message(data...)
@@ -38,7 +39,8 @@ function process_client(sock)
             serialize(sock, response)
         catch err
             @warn "Fail to serialize client: $err"
-            break
+            serialize(sock, FAILURE)
+            continue
         end
     end
 end

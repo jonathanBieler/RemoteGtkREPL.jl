@@ -1,7 +1,9 @@
+using RemoteGtkREPL
+
 module GtkREPLWorker
 
-    using Reexport, Sockets
-    @reexport using RemoteGtkREPL
+    using Sockets
+    using RemoteGtkREPL
 
     gtkrepl_port = parse(Int,ARGS[1])
     global const  id = parse(Int,ARGS[2])
@@ -12,4 +14,4 @@ module GtkREPLWorker
 end
 
 GtkREPLWorker.RemoteGtkREPL.remotecall_fetch(include_string,GtkREPLWorker.gtkrepl,
-    Main,"client_start_cb($(GtkREPLWorker.port))")
+    Main, "client_start_cb($(GtkREPLWorker.port))")

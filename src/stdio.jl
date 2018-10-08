@@ -1,5 +1,5 @@
 function send_stream(rd::IO, sock::TCPSocket, id::Int, mod)
-    nb = nb_available(rd)
+    nb = bytesavailable(rd)
     if nb > 0
         d = read(rd, nb)
         s = String(copy(d))

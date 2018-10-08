@@ -34,7 +34,6 @@ function process_client(sock)
         end
 
         response = process_message(data...)
-
         try
             serialize(sock, response)
         catch err

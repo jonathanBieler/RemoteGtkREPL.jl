@@ -5,16 +5,9 @@ interrupt_task() = @async Base.throwto(_run_task, InterruptException())
 #FIXME dirty hack
 function clean_error_msg(s::String)
 
-    if VERSION < v"0.6.0"
-
-        r  = Regex("(.*)in eval_command_remotely.*","s")
-        m = match(r,s)
-        m != nothing && return m.captures[1]
-    else
-        r  = Regex("""(.*)\\[\\d\\] eval_command_remotely.*""","s")
-        m = match(r,s)
-        m != nothing && return m.captures[1]
-    end
+    r  = Regex("""(.*)\\[\\d\\] eval_command_remotely.*""","s")
+    m = match(r,s)
+    m != nothing && return m.captures[1]
     s
 end
 
@@ -55,9 +48,7 @@ function _eval_command_remotely(cmd::String,eval_in::Module)
     try
         v = Core.eval(eval_in,ex)
         Core.eval(eval_in, :(ans = $(Expr(:quote, v))))
-
         evalout = v == nothing ? "" : format_output(v)
-
     catch err
         bt = catch_backtrace()
         evalout = clean_error_msg( sprint(showerror,err,bt) )

@@ -29,13 +29,14 @@ end
 is_plot(v) = typeof(v) <: Gadfly.Plot ? v : nothing
 
 function eval_command_remotely(cmd::String,eval_in::String)
-    mod =  @eval $(Meta.parse(eval_in))
+    mod =  @eval Main $(Meta.parse(eval_in))
     global _run_task = @async _eval_command_remotely(cmd,mod)
     nothing
 end
 
-function eval_shell_remotely(cmd::String)
-    global _run_task = @async _eval_shell_remotely(cmd)
+function eval_shell_remotely(cmd::String,eval_in::String)
+    mod =  @eval Main $(Meta.parse(eval_in))
+    global _run_task = @async _eval_shell_remotely(cmd,mod)
     nothing
 end
 
@@ -72,7 +73,7 @@ function repl_cmd(cmd)
     ""
 end
 
-function _eval_shell_remotely(cmd::String)
+function _eval_shell_remotely(cmd::String,eval_in::Module)
     evalout = try
         cmd = Core.eval( :(Base.cmd_gen($(Base.shell_parse(cmd)[1]))) )
         repl_cmd(cmd)

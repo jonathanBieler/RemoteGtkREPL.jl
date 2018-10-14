@@ -69,14 +69,13 @@ function _eval_command_remotely(cmd::String,eval_in::Module)
 end
 
 function repl_cmd(cmd)
-    @warn "repl_cmd not implemented"
-    ""
+    read(cmd,String)
 end
 
 function _eval_shell_remotely(cmd::String,eval_in::Module)
     evalout = try
-        cmd = Core.eval( :(Base.cmd_gen($(Base.shell_parse(cmd)[1]))) )
-        repl_cmd(cmd)
+        cmd = Core.eval(Main, :(Base.cmd_gen($(Base.shell_parse(cmd)[1]))) )
+        evalout = repl_cmd(cmd)
     catch err
         bt = catch_backtrace()
         evalout = clean_error_msg( sprint(showerror,err,bt) )

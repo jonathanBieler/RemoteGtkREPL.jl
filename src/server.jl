@@ -29,11 +29,16 @@ function process_client(sock)
             deserialize(sock)
         catch err
             @warn "Fail to deserialize client: $err"
-            serialize(sock, FAILURE)
-            ""
+            (err,)
         end
 
-        response = process_message(data...)
+        response =  try
+            process_message(data...)
+        catch err
+            @warn "Faile to process data" err
+            err
+        end
+
         try
             if typeof(response) == Task # cannot serialize a running Task
                 istaskstarted(response) && !istaskdone(response) && wait(response)
@@ -41,16 +46,25 @@ function process_client(sock)
             serialize(sock, response)
         catch err
             @warn "Fail to serialize client: $err"
+            @show sock
             serialize(sock, FAILURE)
             continue
         end
     end
 end
 
-process_message(data) = begin @show "process_message" data; nothing end
+process_message() = nothing
+process_message(d) = d
+
 function process_message(data)
-    @show "process_message" data
+    @warn "process_message: No processing implemented for $data"
     nothing
+end
+
+process_message(f::Function, args...) = @safe f(args...)
+
+function process_message(mod::Module,ex::Expr)
+    @safe Core.eval(mod,ex)
 end
 
 function remotecall_fetch(f::Function, client::TCPSocket,args...)
@@ -58,8 +72,4 @@ function remotecall_fetch(f::Function, client::TCPSocket,args...)
     x = @safe deserialize(client)
     x
 end
-process_message(f::Function, args...) = @safe f(args...)
 
-function process_message(mod::Module,ex::Expr)
-    @safe Core.eval(mod,ex)
-end

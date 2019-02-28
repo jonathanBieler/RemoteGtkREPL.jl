@@ -1,6 +1,6 @@
 module RemoteGtkREPL
 
-    using Base64, Sockets, Serialization, Distributed
+    using Base64, Sockets, Serialization, Distributed, Pkg
 
     function gadfly()
         @eval begin

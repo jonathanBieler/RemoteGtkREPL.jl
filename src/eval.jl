@@ -2,7 +2,8 @@ run_task() = _run_task
 isdone() = _run_task.state == :done
 interrupt_task() = @async Base.throwto(_run_task, InterruptException())
 
-#FIXME dirty hack
+# FIXME dirty hack
+# see https://github.com/JunoLab/Atom.jl/blob/52ef77a93605cb4ddbf455ba36d1d7e9ae637edc/src/eval.jl#L129
 function clean_error_msg(s::String)
     r  = r"^(.*)\s\[\d\] _eval_command_remotely.*$"s
     m = match(r,s)
@@ -40,21 +41,22 @@ function eval_shell_remotely(cmd::String,eval_in::String)
 end
 
 function _eval_command_remotely(cmd::String,eval_in::Module)
-    ex = Base.parse_input_line(cmd)
-    ex = Meta.lower(eval_in,ex)
+    #ex = Base.parse_input_line(cmd)
+    #ex = Meta.lower(eval_in,ex)
 
     evalout = ""
     v = :()
     try
-        v = Core.eval(eval_in,ex)
+        #v = Core.eval(eval_in,ex)
+        v = include_string(eval_in, cmd)
         Core.eval(eval_in, :(ans = $(Expr(:quote, v))))
         evalout = v == nothing ? "" : format_output(v)
     catch err
         bt = catch_backtrace()
-        evalout = clean_error_msg( sprint(showerror,err,bt) )
+        evalout = clean_error_msg( sprint(showerror, err, bt) )
     end
 
-    evalout = trim(evalout,4000)
+    evalout = trim(evalout, 4000)
     finalOutput = evalout == "" ? "" : "$evalout\n"
 
     if @eval @isdefined Gadfly

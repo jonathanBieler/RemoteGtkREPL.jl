@@ -29,7 +29,7 @@ function process_client(sock)
             deserialize(sock)
         catch err
             @warn "Fail to deserialize client: $err"
-            (err,)
+            (err, )
         end
 
         response =  try
@@ -63,13 +63,17 @@ end
 
 process_message(f::Function, args...) = @safe f(args...)
 
-function process_message(mod::Module,ex::Expr)
-    @safe Core.eval(mod,ex)
+function process_message(mod::Module, ex::Expr)
+    @safe Core.eval(mod, ex)
 end
 
-function remotecall_fetch(f::Function, client::TCPSocket,args...)
+function remotecall_fetch(f::Function, client::TCPSocket, args...)
     @safe serialize(client, (f, args...) )
     x = @safe deserialize(client)
     x
 end
 
+function remotecall(f::Function, client::TCPSocket, args...)
+    @safe @asynch serialize(client, (f, args...) )
+    nothing
+end

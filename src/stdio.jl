@@ -6,9 +6,14 @@ function send_stream(rd::IO, sock::TCPSocket, id::Int, mod)
 
         if !isempty(s)
             #info("sending $s to $(string(sock)) with id: $id")
-            remotecall_fetch(include_string, sock, "
-                $(mod).print_to_console_remote(\"$(s)\", $(id))
-            ")
+            #= lock(serialize_lock) do
+                remotecall_fetch(include_string, sock, Main, "
+                    $(mod).print_to_console_remote(\"$(s)\", $(id))
+                ")
+            end =#
+            lock(serialize_lock) do
+                serialize(sock, (StdOutData(id,s),))
+            end
         end
     end
 end

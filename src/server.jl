@@ -1,4 +1,18 @@
-@enum Messages DONE=1 FAILURE=2
+abstract type Message end
+
+""" Structure that holds data when evaluation is done on remote
+console and result is sent back to GtkREPL"""
+struct EvalDone{T} <: Message 
+    console_idx::Int
+    data::T
+    time::Float64
+end
+
+""" Structure that holds data when stout is sent"""
+struct StdOutData{T} <: Message 
+    console_idx::Int
+    data::T
+end
 
 macro safe(ex)
     esc(quote
@@ -12,7 +26,6 @@ end
 
 function start_server()
     port, server = listenany(8000)
-
     @async begin
         while true
             sock = accept(server)
@@ -33,6 +46,7 @@ function process_client(sock)
         end
 
         response =  try
+            @debug data
             process_message(data...)
         catch err
             @warn "Faile to process data" err
@@ -54,7 +68,6 @@ function process_client(sock)
 end
 
 process_message() = nothing
-process_message(d) = d
 
 function process_message(data)
     @warn "process_message: No processing implemented for $data"
@@ -69,11 +82,5 @@ end
 
 function remotecall_fetch(f::Function, client::TCPSocket, args...)
     @safe serialize(client, (f, args...) )
-    x = @safe deserialize(client)
-    x
-end
-
-function remotecall(f::Function, client::TCPSocket, args...)
-    @safe @asynch serialize(client, (f, args...) )
-    nothing
+    @safe deserialize(client)
 end

@@ -13,5 +13,7 @@ module GtkREPLWorker
 
 end
 
-GtkREPLWorker.RemoteGtkREPL.remotecall_fetch(include_string,GtkREPLWorker.gtkrepl,
-    Main, "client_start_cb($(GtkREPLWorker.port))")
+GtkREPLWorker.RemoteGtkREPL.remotecall_fetch(
+    include_string, GtkREPLWorker.gtkrepl,
+    Main, "client_start_cb($(GtkREPLWorker.port))"
+)

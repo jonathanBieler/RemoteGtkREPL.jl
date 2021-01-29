@@ -42,15 +42,14 @@ end
     port, server = RemoteGtkREPL.start_server()
 
     client = connect(port)
-    serialize(client,("hello",))
-    deserialize(client)
     #
     @test RemoteGtkREPL._eval_command_remotely("x=2", @__MODULE__) == ("2\n",nothing)
     @test x == 2
     #
 
-    RemoteGtkREPL.eval_command_remotely("x=3",string(@__MODULE__))
-    while !RemoteGtkREPL.isdone() sleep(0.01) end
+    RemoteGtkREPL.process_message(data...) = println(data)
+    RemoteGtkREPL.eval_command_remotely("x=3", string(@__MODULE__))
+    
     @test RemoteGtkREPL.run_task().result == ("3\n",nothing)
     @test x == 3
     #

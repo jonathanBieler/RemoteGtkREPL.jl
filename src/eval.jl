@@ -38,7 +38,8 @@ function eval_command_remotely(cmd::String, eval_in::String)
     @async begin
         mod =  @eval Main $(Meta.parse(eval_in))
         t = @elapsed finalOutput, v = _eval_command_remotely(cmd, mod)
-        #TODO check stdout at this point ?
+        #TODO check stdout at this point ? Let's wait a bit at least
+        sleep(50/1000)
         lock(serialize_lock) do
             serialize(gtkrepl.socket, (EvalDone(
                 gtkrepl.console_idx,

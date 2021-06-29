@@ -14,13 +14,18 @@ module RemoteGtkREPL
         console_idx::Int
         remote_module::String
     end
+
     function estalbish_connection(ARGS)
         gtkrepl_port = parse(Int, ARGS[1])
         idx = parse(Int, ARGS[2]) # console/worker id
-        remote_module = ARGS[3]     # the module calling us as a String
+        remote_module = ARGS[3]   # the module calling us as a String
 
+        estalbish_connection(gtkrepl_port, idx, remote_module)
+    end
+
+    function estalbish_connection(gtkrepl_port, idx, remote_module)
+        
         port, server = start_server()
-    
         socket = connect(gtkrepl_port)
         global gtkrepl = GtkREPL_Server(socket, idx, remote_module)
 
@@ -33,7 +38,6 @@ module RemoteGtkREPL
             watch_stdio_task = @async watch_stream(read_stdout, socket, idx, remote_module)
         end
     end
-
 
     function __init__()
         global _run_task = @async begin end

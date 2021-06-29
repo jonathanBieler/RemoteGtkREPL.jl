@@ -60,7 +60,6 @@ function process_client(sock)
             serialize(sock, response)
         catch err
             @warn "Fail to serialize client: $err"
-            @show sock
             serialize(sock, FAILURE)
             continue
         end

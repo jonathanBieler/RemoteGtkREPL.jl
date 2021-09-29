@@ -1,6 +1,7 @@
 module RemoteGtkREPL
 
     using Base64, Sockets, Serialization, Distributed, Pkg, REPL
+    using DataFrames #if I don't use DataFrames here autocompletion doesn't work (not sure why)
 
     import Distributed: remotecall_fetch, remotecall
     import REPL.REPLCompletions.completions
